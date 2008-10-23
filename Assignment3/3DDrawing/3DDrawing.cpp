@@ -44,6 +44,7 @@ Camera *curCam;
 
 bool light0;
 bool light1;
+bool light2;
 
 //Initializes OpenGL and ...
 void Initialize() {
@@ -61,8 +62,11 @@ void Initialize() {
     glEnable(GL_LIGHT1);
     light1 = true;
 
-	//glEnable(GL_LIGHT2);
+	glEnable(GL_LIGHT2);
+    light2 = true;
     
+	glEnable(GL_NORMALIZE);
+
 	glEnable(GL_DEPTH_TEST);
 
 	// Init cameras
@@ -83,12 +87,15 @@ void Initialize() {
 // Updates the scene
 void update() {
 	// increment rotation to animate gyroscope
-	rot += 0.1;
+	rot += 0.2;
 	if(rot > 360) rot = 0.0;
 	glutPostRedisplay();
 }
 
-GLfloat mat_specular[]      = { 0.1, 0.1, 0.0, 0.0 };
+GLfloat mat_ambient[] = { 0.1, 0.1, 0.1, 1.0 };
+GLfloat mat_diffuse[] = { 0.5, 0.5, 0.5, 1.0 };
+GLfloat mat_specular[] = { 0.7, 0.7, 0.7, 1.0 };
+GLfloat mat_shine[] = {30};
 
 // Draws the gyroscope
 void drawGyroscope() {
@@ -96,7 +103,10 @@ void drawGyroscope() {
 	// center sphere
 	glutSolidSphere(.6, 32 , 32);
 
+	glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
 	glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+	glMaterialfv(GL_FRONT, GL_SHININESS, mat_shine);
 
 	// torus1 
 	glRotatef(rot, 0.0, 1.0, 0.0);
@@ -132,24 +142,24 @@ void drawBase() {
 	gluDisk(gluNewQuadric(), 0.0, 4.0, 16, 8); 
 }
 
+
 GLfloat position1[] = { 2.0, -2.0, 2.0, 1.0 };
-GLfloat ambient1[] = { 0.2, 0.2, 0.1, 0.5 };
-GLfloat diffuse1[] = { 0.5, 0.5, 0.5, 1.0 };
-GLfloat exponent1[] = { 2.0 };
+GLfloat ambient[] = { 0.2, 0.2, 0.2, 1.0 };
 
 GLfloat position2[] = { -2.0, 2.0, 2.0, 1.0 };
-GLfloat specular2[] = { 0.5, 0.5, 0.5, 1.0 };
+GLfloat diffuse[] = { 0.7, 0.7, 0.3, 1.0 };
+GLfloat specular[] = { 1.0, 1.0, 1.0, 1.0 };
 
 // Sets the lighting for draw
 void lighting() {
     glLightfv(GL_LIGHT0, GL_POSITION, position1);
-	glLightfv(GL_LIGHT0, GL_AMBIENT, ambient1);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse1);
+	glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
 
     glLightfv(GL_LIGHT1, GL_POSITION, position2);
-	glLightfv(GL_LIGHT1, GL_SPECULAR, specular2);
-	glLightfv(GL_LIGHT1, GL_DIFFUSE, diffuse1);
-	glLightfv(GL_LIGHT1, GL_SPOT_EXPONENT, exponent1);
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, diffuse);
+
+    glLightfv(GL_LIGHT2, GL_POSITION, position2);
+	glLightfv(GL_LIGHT2, GL_SPECULAR, specular);
 }
 
 // Draws the graphics
@@ -190,13 +200,9 @@ void keyboard(unsigned char key, int x, int y) {
 		light1 ? glDisable(GL_LIGHT1) : glEnable(GL_LIGHT1);
 		light1 = !light1;
 	} else if(key == 51) { // 3
-
+		light2 ? glDisable(GL_LIGHT2) : glEnable(GL_LIGHT2);
+		light2 = !light2;
 	}
-
-	// d = 100
-	// s = 115
-	// a = 97
-	// w = 119
 }
 
 // Handles window resizing
@@ -205,7 +211,7 @@ void reshape (int w, int h)
    glViewport (0, 0, (GLsizei) w, (GLsizei) h); 
    glMatrixMode (GL_PROJECTION);
    glLoadIdentity ();
-   glFrustum (-1.0, 1.0, -1.0, 1.0, 1.5, 20.0);
+   glFrustum (-1.0, 1.0, -1.0, 1.0, 1.0, 20.0);
    glMatrixMode (GL_MODELVIEW);
 }
 
@@ -228,7 +234,6 @@ int _tmain(int argc, char** argv)
 	
 	glutDisplayFunc(Draw); 
 	glutReshapeFunc(reshape);
-	//glutTimerFunc(20, update, 0);
 	glutIdleFunc(update);
 	glutKeyboardFunc(keyboard);
 	glutMainLoop();

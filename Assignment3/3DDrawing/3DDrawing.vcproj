@@ -224,6 +224,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\bitmap2.bmp"
+				>
+			</File>
+			<File
 				RelativePath=".\metal.bmp"
 				>
 			</File>

@@ -2,7 +2,7 @@
 //
 
 #include "stdafx.h"
-
+#include <stdlib.h>
 #include <cstdio>
 #include <cmath>
 
@@ -10,12 +10,15 @@
 
 using namespace std;
 
+
 #define RES_WIDTH 800.0
 #define RES_HEIGHT 800.0
 
 float rot = 0.0;
 #define ROT_ACCEL 0.01;
 float rotSpeed = ROT_ACCEL;
+
+#define PI 3.14159265
 
 // Holds values for the View transform
 struct Camera {
@@ -50,38 +53,11 @@ bool light1;
 bool light2;
 bool light3;
 
-GLubyte image;
+// array of texture id's
+GLuint textures[2];
 
-void LoadTextures() {
-	/**int width, height;
-	byte * data;
-	FILE * file;
-
-	// texture data
-	width = 256;
-	height = 256;
-
-	// allocate buffer
-	data = malloc( width * height * 3 );
-	
-	// open and read texture data
-	string filename = "metal.bmp";
-	file = fopen( filename, "rb" );
-	fread( data, width * height * 3, 1, file );
-	fclose( file );
-
-	// build our texture mipmaps
-	gluBuild2DMipmaps( GL_TEXTURE_2D, 3, width, height, GL_RGB, GL_UNSIGNED_BYTE, data );*/
-}
-
-//Initializes OpenGL and ...
-void Initialize() {
-
-	// Init GL 
-	glClearColor (0.0, 0.0, 0.0, 0.0);
-	glShadeModel (GL_SMOOTH);
-
-	// Init lighting
+// Sets up lighting for 4 light sources
+void InitLighting() {
 	glEnable(GL_LIGHTING);
     
 	glEnable(GL_LIGHT0);
@@ -99,8 +75,10 @@ void Initialize() {
 	glEnable(GL_NORMALIZE);
 
 	glEnable(GL_DEPTH_TEST);
+}
 
-	// Init cameras
+// Sets up two cameras
+void InitCameras() {
 	cam1 = *new Camera();
 	cam1.eyeY = 0.0;
 	cam1.eyeZ = 5.0;
@@ -112,36 +90,87 @@ void Initialize() {
 	cam2.ID = 1;
 
 	curCam = &cam1;
+}
+
+/*
+ *  LoadTexturePPM - copied from Nan's directory.  Originally
+ *  written by: Blaine Hodge
+ */
+int LoadTexturePPM( const char * filename, int w, int h, int color )
+{
+    GLubyte *data;
+    FILE * file;
+
+    /* open texture data */
+    file = fopen( filename, "rb" );
+    if ( file == NULL ) return 0;
+
+    /* allocate buffer */
+    data = (GLubyte*)malloc( w * h * 3 * (sizeof(GLubyte)));
+
+    /* read texture data */
+    fread( data, w * h * 3, 1, file );
+    fclose( file );
+
+    /* build our tex image */
+
+    glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+    if (color) {
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB,
+                                      GL_UNSIGNED_BYTE, data );
+
+    } else {
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_LUMINANCE, w, h, 0, GL_LUMINANCE,
+                                      GL_UNSIGNED_BYTE, data );
+    }
+
+    /* free buffer */
+    free( data );
+
+    return 1;
+}
+
+// Loads textures
+void LoadTextures() {    glPixelStorei( GL_UNPACK_ALIGNMENT, 1);
+    glGenTextures(1, textures);
+
+    glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
+    glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
+    glEnable(GL_TEXTURE_GEN_S);
+    glEnable(GL_TEXTURE_GEN_T);
+
+    glBindTexture(GL_TEXTURE_2D, textures[0]);
+    if (!LoadTexturePPM("metal.bmp", 256, 256, 1)) {
+        printf("Error loading texture!");
+    }
+}
+
+
+//Initializes OpenGL and ...
+void Initialize() {
+
+	// Init GL 
+	glClearColor (0.0, 0.0, 0.0, 0.0);
+	glShadeModel (GL_SMOOTH);
+
+	// Init lighting
+	InitLighting();
+
+	// Init cameras
+	InitCameras();
 
 	// Init Textures
-
 	glEnable( GL_TEXTURE_2D );
-
 	LoadTextures();
-
-	//glTexImage2D( GL_TEXTURE_2D, 0, 3, 64, 64, 0, GL_RGB, GL_UNSIGNED_BYTE, image );
-
-	// Sets the wrap parameter for the horizontal coordinate, s,  to repeat
-	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-
-	// Sets the wrap parameter for the vertical coordinate, t, to repeat
-	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-
-	// Sets the magification parameter to that texture element nearest to
-	// the center of the pixel
-	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-
-	// Sets the minifying parameter to that texture element nearest to
-	// the center of the pixel
-	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR ); 
-
 	
 	// clear the matrix
 	glLoadIdentity ();    
 	
 }
-
-#define PI 3.14159265
 
 // Updates the scene
 void update() {
@@ -150,10 +179,9 @@ void update() {
 	rot += rotSpeed;
 	if(rot > 360) rot = 0.0;
 
-	// update camera 2
-	
+	// update camera 2	
+	// TODO: optimize
 	float x1, y1, z1, x2, y2, z2;
-
 	float rad = (rot) * PI / 180;
 
 	// y-axis
@@ -222,6 +250,7 @@ void drawGyroscope() {
 
 // Draws the base of the scene
 void drawBase() {
+	glBindTexture(GL_TEXTURE_2D, textures[0]);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat_specular);
 
 	glPushMatrix();
@@ -230,7 +259,6 @@ void drawBase() {
 	gluDisk(gluNewQuadric(), 0.0, 4.0, 64, 32); 
 	glPopMatrix();
 }
-
 
 GLfloat position1[] = { 2.0, -2.0, 2.0, 1.0 };
 GLfloat ambient[] = { 0.2, 0.2, 0.2, 1.0 };
@@ -274,7 +302,6 @@ void Draw() {
 	lighting();
 
 	// world transforms
-    
 	drawBase();
 	drawGyroscope();
 
@@ -294,16 +321,16 @@ void keyboard(unsigned char key, int x, int y) {
 		rotSpeed += ROT_ACCEL;
 	} else if(key == 122) { // z, slow down
 		rotSpeed -= ROT_ACCEL;
-	} else if(key == 49) { // 1
+	} else if(key == 49) { // 1, toggle light 0
 		light0 ? glDisable(GL_LIGHT0) : glEnable(GL_LIGHT0);
 		light0 = !light0;
-	} else if(key == 50) { // 2
+	} else if(key == 50) { // 2, toggle light 1
 		light1 ? glDisable(GL_LIGHT1) : glEnable(GL_LIGHT1);
 		light1 = !light1;
-	} else if(key == 51) { // 3
+	} else if(key == 51) { // 3, toggle light 2
 		light2 ? glDisable(GL_LIGHT2) : glEnable(GL_LIGHT2);
 		light2 = !light2;
-	} else if(key == 52) { // 4
+	} else if(key == 52) { // 4, toggle light 3
 		light3 ? glDisable(GL_LIGHT3) : glEnable(GL_LIGHT3);
 		light3 = !light3;
 	}

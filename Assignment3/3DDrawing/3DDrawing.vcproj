@@ -224,11 +224,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\bitmap2.bmp"
+				RelativePath=".\metal.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\metal.bmp"
+				RelativePath=".\metalFloor.bmp"
 				>
 			</File>
 		</Filter>

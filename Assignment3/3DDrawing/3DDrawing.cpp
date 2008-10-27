@@ -1,5 +1,5 @@
 // 3DDrawing.cpp : Defines the entry point for the console application.
-//
+// author: Mike DeMauro
 
 #include "stdafx.h"
 #include <stdlib.h>
@@ -59,7 +59,8 @@ GLuint textures[2];
 // Sets up lighting for 4 light sources
 void InitLighting() {
 	glEnable(GL_LIGHTING);
-    
+	glLightModeli( GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE );
+
 	glEnable(GL_LIGHT0);
 	light0 = true;
 
@@ -136,7 +137,7 @@ int LoadTexturePPM( const char * filename, int w, int h, int color )
 
 // Loads textures
 void LoadTextures() {    glPixelStorei( GL_UNPACK_ALIGNMENT, 1);
-    glGenTextures(1, textures);
+    glGenTextures(2, textures);
 
     glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
     glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
@@ -145,6 +146,10 @@ void LoadTextures() {    glPixelStorei( GL_UNPACK_ALIGNMENT, 1);
 
     glBindTexture(GL_TEXTURE_2D, textures[0]);
     if (!LoadTexturePPM("metal.bmp", 256, 256, 1)) {
+        printf("Error loading texture!");
+    }
+    glBindTexture(GL_TEXTURE_2D, textures[1]);
+    if (!LoadTexturePPM("metalFloor.bmp", 256, 256, 1)) {
         printf("Error loading texture!");
     }
 }
@@ -211,22 +216,23 @@ void drawGyroscope() {
 
 	glPushMatrix();
 
-	// center sphere
-	glutSolidSphere(.25, 64 , 64);
-
 	glPopMatrix();
 	glPushMatrix();
 
-	glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
-	glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
-	glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
-	glMaterialfv(GL_FRONT, GL_SHININESS, mat_shine);
+	glBindTexture(GL_TEXTURE_2D, textures[0]);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat_ambient);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, mat_shine);
+
+	// center sphere
+	glutSolidSphere(.25, 64 , 64);
 
 	// torus1 
 	glRotatef(rot, 0.0, 1.0, 0.0);
 	glScalef (1.0, 1.0, 1.0);
 	//gluCylinder(gluNewQuadric(), 1.0, 1.0, 0.1, 64, 8); 
-	//gluDisk(gluNewQuadric(), 0.9, 1.0, 64, 16);
+	gluDisk(gluNewQuadric(), 0.9, 1.0, 64, 16);
 	glutSolidTorus(0.05, 1.5, 16, 64);
 
 	// torus2
@@ -234,7 +240,7 @@ void drawGyroscope() {
 	glRotatef(rot, 1.0, 0.0, 0.0);
 	glScalef (1.1, 1.1, 1.1);
 	//gluCylinder(gluNewQuadric(), 1.0, 1.0, 0.1, 64, 8); 
-	//gluDisk(gluNewQuadric(), 0.9, 1.0, 64, 16);
+	gluDisk(gluNewQuadric(), 0.9, 1.0, 64, 16);
 	glutSolidTorus(0.05, 1.5, 16, 64);
 	
 	// torus3 
@@ -242,16 +248,21 @@ void drawGyroscope() {
 	glRotatef(rot, 0.0, 1.0, 0.0);
 	glScalef (1.1, 1.1, 1.1);
 	//gluCylinder(gluNewQuadric(), 1.0, 1.0, 0.1, 64, 8); 
-	//gluDisk(gluNewQuadric(), 0.9, 1.0, 64, 16);
+	gluDisk(gluNewQuadric(), 0.9, 1.0, 64, 16);
 	glutSolidTorus(0.05, 1.5, 16, 64);
 
 	glPopMatrix();
 }
 
+GLfloat floorAmbient[] = { 1.0, 1.0, 1.0, 1.0 };
+
 // Draws the base of the scene
 void drawBase() {
-	glBindTexture(GL_TEXTURE_2D, textures[0]);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat_specular);
+	glBindTexture(GL_TEXTURE_2D, textures[1]);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, floorAmbient);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, mat_shine);
 
 	glPushMatrix();
 	glTranslatef(0.0, -1.9, 0.0);
@@ -260,6 +271,7 @@ void drawBase() {
 	glPopMatrix();
 }
 
+// lighting parameters
 GLfloat position1[] = { 2.0, -2.0, 2.0, 1.0 };
 GLfloat ambient[] = { 0.2, 0.2, 0.2, 1.0 };
 
@@ -351,6 +363,7 @@ void Unload() {
 	delete curCam;
 }
 
+// Entry point
 int _tmain(int argc, char** argv)
 {
 	glEnable(GL_DOUBLEBUFFER);

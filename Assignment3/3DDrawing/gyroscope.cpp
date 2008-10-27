@@ -10,13 +10,19 @@
 
 using namespace std;
 
-
+// Screen size
 #define RES_WIDTH 800.0
 #define RES_HEIGHT 800.0
 
+// Number of gyroscope rings
+int numRings = 1;
+#define MIN_RINGS 1
+#define MAX_RINGS 14
+
+// Speed of gyroscope rotation
 float rot = 0.0;
 float rotSpeed = 0.0;
-#define ROT_ACCEL 0.01;
+#define ROT_ACCEL 0.001;
 
 #define PI 3.14159265
 
@@ -43,6 +49,7 @@ struct Camera {
 	}
 };
 
+// Camera structs
 Camera cam1;
 Camera cam2;
 
@@ -206,6 +213,7 @@ void update() {
 	glutPostRedisplay();
 }
 
+// Ring material params
 GLfloat mat_ambient[] = { 0.1, 0.1, 0.1, 1.0 };
 GLfloat mat_diffuse[] = { 0.5, 0.5, 0.5, 1.0 };
 GLfloat mat_specular[] = { 0.7, 0.7, 0.7, 1.0 };
@@ -214,9 +222,6 @@ GLfloat mat_shine[] = {30};
 // Draws the gyroscope
 void drawGyroscope() {
 
-	glPushMatrix();
-
-	glPopMatrix();
 	glPushMatrix();
 
 	glBindTexture(GL_TEXTURE_2D, textures[0]);
@@ -230,26 +235,22 @@ void drawGyroscope() {
 
 	// torus1 
 	glRotatef(rot, 0.0, 1.0, 0.0);
-	glScalef (1.0, 1.0, 1.0);
+	glScalef (1.2, 1.2, 1.2);
 	//gluCylinder(gluNewQuadric(), 1.0, 1.0, 0.1, 64, 8); 
-	gluDisk(gluNewQuadric(), 0.9, 1.0, 64, 16);
+	//gluDisk(gluNewQuadric(), 0.9, 1.0, 64, 16);
+	//glRotatef(rot, 0.0, 1.0, 0.0);
 	glutSolidTorus(0.05, 1.5, 16, 64);
 
-	// torus2
-	
-	glRotatef(rot, 1.0, 0.0, 0.0);
-	glScalef (1.1, 1.1, 1.1);
-	//gluCylinder(gluNewQuadric(), 1.0, 1.0, 0.1, 64, 8); 
-	gluDisk(gluNewQuadric(), 0.9, 1.0, 64, 16);
-	glutSolidTorus(0.05, 1.5, 16, 64);
-	
-	// torus3 
-
-	glRotatef(rot, 0.0, 1.0, 0.0);
-	glScalef (1.1, 1.1, 1.1);
-	//gluCylinder(gluNewQuadric(), 1.0, 1.0, 0.1, 64, 8); 
-	gluDisk(gluNewQuadric(), 0.9, 1.0, 64, 16);
-	glutSolidTorus(0.05, 1.5, 16, 64);
+	for(int i = 0; i < numRings - 1; ++i) {
+		if(i % 2 == 0) {
+			glRotatef(rot, 0.0, 1.0, 0.0);
+		} else {
+			glRotatef(rot, 1.0, 0.0, 0.0);
+		}
+		//glRotatef(rot, 1.0 * (i % 2), 1.0 * (i % 1), 0.0);
+		glScalef (0.9, 0.9, 0.9);
+		glutSolidTorus(0.05, 1.5, 16, 64);
+	}
 
 	glPopMatrix();
 }
@@ -345,6 +346,14 @@ void keyboard(unsigned char key, int x, int y) {
 	} else if(key == 52) { // 4, toggle light 3
 		light3 ? glDisable(GL_LIGHT3) : glEnable(GL_LIGHT3);
 		light3 = !light3;
+	} else if(key == 115) { // 115, add ring
+		if(numRings < MAX_RINGS) {
+			++numRings;
+		}
+	} else if(key == 120) { // 120, remove ring
+		if(numRings > MIN_RINGS) {
+			--numRings;
+		}
 	}
 }
 

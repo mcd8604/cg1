@@ -15,8 +15,8 @@ using namespace std;
 #define RES_HEIGHT 800.0
 
 float rot = 0.0;
+float rotSpeed = 0.0;
 #define ROT_ACCEL 0.01;
-float rotSpeed = ROT_ACCEL;
 
 #define PI 3.14159265
 

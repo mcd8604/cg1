@@ -1,4 +1,4 @@
-// 3DDrawing.cpp : Defines the entry point for the console application.
+// gyroscope.cpp : Defines the entry point for the console application.
 // author: Mike DeMauro
 
 #include "stdafx.h"

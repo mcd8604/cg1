@@ -15,6 +15,7 @@ Instructions for building and running:
 	Press a or z to start animation.
 
 
+
 Keyboard Input:
 
 	a: Increase rotation speed
@@ -26,3 +27,7 @@ Keyboard Input:
 	1-4: Toggle lights 1-4
 	
 	q: Quit program
+
+	s: Add Ring
+
+	x: Remove Ring

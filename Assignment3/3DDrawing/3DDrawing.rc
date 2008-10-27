@@ -53,6 +53,7 @@ END
 //
 
 IDB_BITMAP1             BITMAP                  "metal.bmp"
+IDB_BITMAP2             BITMAP                  "metalFloor.bmp"
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 

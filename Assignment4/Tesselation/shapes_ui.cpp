@@ -147,7 +147,7 @@ void ShapesUI::displayUI() {
   }
   { Fl_Slider* o = new Fl_Slider(15, 220, 210, 25, "Y Rotation");
     o->type(5);
-    o->maximum(180);
+    o->maximum(360);
     o->step(1);
     o->align(FL_ALIGN_TOP);
     o->callback(rotation_callback, this);

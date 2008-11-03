@@ -135,11 +135,33 @@ Cone::Cone(int n, int m) : Shape() {
 	pBotOrgn = new Point3(0, -0.5, 0);
 
 	for(int i = 0; i < n; ++i) {
-		p1Bot = new Point3(cos(theta * i) * 0.5, -0.5, sin(theta * i) * 0.5);
-		p2Bot = new Point3(cos(theta * ((i + 1) % n)) * 0.5, -0.5, sin(theta * ((i + 1) % n)) * 0.5);
 
 		// bottom
+		p1Bot = new Point3(cos(theta * i) * 0.5, -0.5, sin(theta * i) * 0.5);
+		p2Bot = new Point3(cos(theta * ((i + 1) % n)) * 0.5, -0.5, sin(theta * ((i + 1) % n)) * 0.5);
 		addTriangle(*pBotOrgn, *p1Bot, *p2Bot);
+
+		// sides, start at bottom, decrease radius, increment upwards
+		double deltaY = 1.0 / m;
+		double r;
+		for(int j = 0; j < m - 1; ++j) {
+			r = 0.5 * (1 - deltaY * (j + 1));
+			p1Top = new Point3(cos(theta * i) * r, p1Bot -> y + deltaY, sin(theta * i) * r);
+			p2Top = new Point3(cos(theta * ((i + 1) % n)) * r, p1Top -> y, sin(theta * ((i + 1) % n)) * r);
+			
+			addTriangle(*p2Bot, *p1Bot, *p2Top);
+			addTriangle(*p2Top, *p1Bot, *p1Top);
+			
+			delete p1Bot;
+			delete p2Bot;
+			p1Bot = new Point3(*p1Top);
+			p2Bot = new Point3(*p2Top);
+			delete p1Top;
+			delete p2Top;
+		}
+
+		// apex
+		addTriangle(*p1Bot, *pTopOrgn, *p2Bot);
 	
 		// free allocated memory
 		delete p1Bot;
@@ -168,15 +190,15 @@ Cylinder::Cylinder(int n, int m) : Shape() {
 	pBotOrgn = new Point3(0, -0.5, 0);
 
 	for(int i = 0; i < n; ++i) {
+		
+		// top
 		p1Top = new Point3(cos(theta * i) * 0.5, 0.5, sin(theta * i) * 0.5);
 		p2Top = new Point3(cos(theta * ((i + 1) % n)) * 0.5, 0.5, sin(theta * ((i + 1) % n)) * 0.5);
+		addTriangle(*p2Top, *p1Top, *pTopOrgn);
 
+		// bottom
 		p1Bot = new Point3(p1Top -> x, -0.5, p1Top -> z);
 		p2Bot = new Point3(p2Top -> x, -0.5, p2Top -> z);
-
-		// top
-		addTriangle(*p2Top, *p1Top, *pTopOrgn);
-		// bottom
 		addTriangle(*pBotOrgn, *p1Bot, *p2Bot);
 		
 		// sides, start at bottom, increment upwards

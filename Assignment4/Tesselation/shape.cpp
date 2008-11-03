@@ -43,6 +43,8 @@ Cube::Cube(int n) : Shape() {
 			u1 = l * x - 0.5;
 			u2 = l * (x + 1) - 0.5;
 
+			// TODO: optimize, reduce instantiation
+
 			// -z face
 			p1 = new Point3(u1, v1, -0.5);
 			p2 = new Point3(u2, v1, -0.5);
@@ -225,6 +227,9 @@ Cylinder::Cylinder(int n, int m) : Shape() {
 }
 
 
+const double a = 2 / (1 + sqrt(5.0));
+const double radius = 1.0;
+
 Sphere::Sphere(int n) : Shape() {
 
 	//your code for tessellating a sphere goes here
@@ -240,8 +245,7 @@ Sphere::Sphere(int n) : Shape() {
 	if (n > 5)
 		n = 5;
 
-	// TODO: make constant
-	double a = 2 / (1 + sqrt(5.0));
+	// First create an icosahedron as a starting shape, credit via notes
 
 	// TODO: make constant
 	Point3 *v0 = new Point3(0,  a, -1);
@@ -257,7 +261,7 @@ Sphere::Sphere(int n) : Shape() {
 	Point3 *v10 = new Point3(-a, -1,  0);
 	Point3 *v11 = new Point3(a, -1,  0);
 
-	/*addTriangle( *v0 , *v1 , *v2 );
+	addTriangle( *v0 , *v1 , *v2 );
 	addTriangle( *v3 , *v2 , *v1 );
 	addTriangle( *v3 , *v4 , *v5 );	
 	addTriangle( *v3 , *v5 , *v6 );
@@ -276,9 +280,67 @@ Sphere::Sphere(int n) : Shape() {
 	addTriangle( *v8 , *v10 , *v9 );
 	addTriangle( *v8 , *v7 , *v11 );
 	addTriangle( *v5 , *v4 , *v10 );
-	addTriangle( *v5 , *v11 , *v6 );*/
+	addTriangle( *v5 , *v11 , *v6 );
 
+	// Next, tesselate the icosahedron
 
+	for(int i = 1; i < n; ++i) {
+		
+		// get current triangle vertices, clear old list
+		vector<Point3> *points = new vector<Point3>(vertices.begin(), vertices.end());
+		vertices.clear();
+
+		// subdivide each triangle 
+		for(int j = 0; j < points -> size(); j+=3) {
+			
+			Point3 p1, p2, p3, *m12, *m23, *m13;
+			p1 = points -> at(j);
+			p2 = points -> at(j + 1);
+			p3 = points -> at(j + 2);
+			
+			// calculate midpoint vectors
+			Vector3 *m12Vec = new Vector3((p1.x + p2.x) / 2, (p1.y + p2.y) / 2, (p1.z + p2.z) / 2);
+			Vector3 *m23Vec = new Vector3((p2.x + p3.x) / 2, (p2.y + p3.y) / 2, (p2.z + p3.z) / 2);
+			Vector3 *m13Vec = new Vector3((p1.x + p3.x) / 2, (p1.y + p3.y) / 2, (p1.z + p3.z) / 2);
+
+			// normalize midpoint vectors
+			m12Vec -> normalize();
+			m23Vec -> normalize();
+			m13Vec -> normalize();
+
+			(*m12Vec) *= radius;
+			(*m23Vec) *= radius;
+			(*m13Vec) *= radius;
+			
+			// create points from vectors
+			m12 = new Point3(m12Vec -> x, m12Vec -> y, m12Vec -> z);
+			m23 = new Point3(m23Vec -> x, m23Vec -> y, m23Vec -> z);
+			m13 = new Point3(m13Vec -> x, m13Vec -> y, m13Vec -> z);
+
+			// triangle 1 - point 1, midpoint 1-2, midpoint 1-3
+			addTriangle(p1, *m12, *m13);
+
+			// triangle 2 - point 2, midpoint 2-3. midpoint 1-2
+			addTriangle(p2, *m23, *m12);
+			
+			// triangle 3 - point 3, midpoint 1-3, midpoint 2-3
+			addTriangle(p3, *m13, *m23);
+
+			// triangle 4 - midpoint 1-2, midpoint 2-3, midpoint 1-3
+			addTriangle(*m12, *m23, *m13);
+
+			// free allocated memory
+			delete m12Vec;
+			delete m23Vec;
+			delete m13Vec;
+			delete m12;
+			delete m23;
+			delete m13;
+		}
+		delete points;
+	}
+
+	//vertices.assign( points -> begin(), points -> end() );
 }
 
 

@@ -229,7 +229,6 @@ Sphere::Sphere(int n) : Shape() {
 
 	//your code for tessellating a sphere goes here
 
-
 	// Note:
 	// If you decide to solve this problem by recursively subdividing a regular platonic solid, you may use 
 	// the geometric description of an icosahredron mesh provided in the lecture notes as a starting point for the
@@ -237,6 +236,48 @@ Sphere::Sphere(int n) : Shape() {
 	//
 	// You should divide each triangle into 4 smaller triangles as the parameter 'n' increases.
 	// There is no need to go beyond 5 levels of subdivision - i.e. if n > 5 then set n = 5
+
+	if (n > 5)
+		n = 5;
+
+	// TODO: make constant
+	double a = 2 / (1 + sqrt(5.0));
+
+	// TODO: make constant
+	Point3 *v0 = new Point3(0,  a, -1);
+	Point3 *v1 = new Point3(-a,  1,  0);
+	Point3 *v2 = new Point3(a,  1,  0);
+	Point3 *v3 = new Point3(0,  a,  1);
+	Point3 *v4 = new Point3(-1,  0,  a);
+	Point3 *v5 = new Point3(0, -a,  1);
+	Point3 *v6 = new Point3(1,  0,  a);
+	Point3 *v7 = new Point3(1,  0, -a);
+	Point3 *v8 = new Point3(0, -a, -1);
+	Point3 *v9 = new Point3(-1,  0, -a);
+	Point3 *v10 = new Point3(-a, -1,  0);
+	Point3 *v11 = new Point3(a, -1,  0);
+
+	/*addTriangle( *v0 , *v1 , *v2 );
+	addTriangle( *v3 , *v2 , *v1 );
+	addTriangle( *v3 , *v4 , *v5 );	
+	addTriangle( *v3 , *v5 , *v6 );
+	addTriangle( *v0 , *v7 , *v8 );
+	addTriangle( *v0 , *v8 , *v9 );
+	addTriangle( *v5 , *v10 , *v11 );	
+	addTriangle( *v8 , *v11 , *v10 );
+	addTriangle( *v1 , *v9 , *v4 );		
+	addTriangle( *v10 , *v4 , *v9 );
+	addTriangle( *v2 , *v6 , *v7 );	
+	addTriangle( *v11 , *v7 , *v6 );
+	addTriangle( *v3 , *v1 , *v4 );	
+	addTriangle( *v3 , *v6 , *v2 );
+	addTriangle( *v0 , *v9 , *v1 );
+	addTriangle( *v0 , *v2 , *v7 );
+	addTriangle( *v8 , *v10 , *v9 );
+	addTriangle( *v8 , *v7 , *v11 );
+	addTriangle( *v5 , *v4 , *v10 );
+	addTriangle( *v5 , *v11 , *v6 );*/
+
 
 }
 

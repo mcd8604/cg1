@@ -31,6 +31,7 @@ Cube::Cube(int n) : Shape() {
 
 	// Your code for tessellating a cube goes here
 	
+	// length of each section
 	double l = 1.0 / n;
 	double u1, u2, v1, v2;
 	Point3 *p1, *p2, *p3, *p4;
@@ -49,6 +50,10 @@ Cube::Cube(int n) : Shape() {
 			p4 = new Point3(u1, v2, -0.5);
 			addTriangle(*p3, *p2, *p1);
 			addTriangle(*p4, *p3, *p1);
+			delete p1;
+			delete p2;
+			delete p3;
+			delete p4;
 
 			// +z face
 			p1 = new Point3(u1, v1, 0.5);
@@ -57,6 +62,10 @@ Cube::Cube(int n) : Shape() {
 			p4 = new Point3(u1, v2, 0.5);
 			addTriangle(*p1, *p2, *p3);
 			addTriangle(*p1, *p3, *p4);
+			delete p1;
+			delete p2;
+			delete p3;
+			delete p4;
 
 			// -y face
 			p1 = new Point3(u1, -0.5, v1);
@@ -65,6 +74,10 @@ Cube::Cube(int n) : Shape() {
 			p4 = new Point3(u1, -0.5, v2);
 			addTriangle(*p1, *p2, *p3);
 			addTriangle(*p1, *p3, *p4);
+			delete p1;
+			delete p2;
+			delete p3;
+			delete p4;
 
 			// +y face
 			p1 = new Point3(u1, 0.5, v1);
@@ -73,6 +86,10 @@ Cube::Cube(int n) : Shape() {
 			p4 = new Point3(u1, 0.5, v2);
 			addTriangle(*p3, *p2, *p1);
 			addTriangle(*p4, *p3, *p1);
+			delete p1;
+			delete p2;
+			delete p3;
+			delete p4;
 
 			// -x face
 			p1 = new Point3(-0.5, v1, u1);
@@ -81,6 +98,10 @@ Cube::Cube(int n) : Shape() {
 			p4 = new Point3(-0.5, v2, u1);
 			addTriangle(*p1, *p2, *p3);
 			addTriangle(*p1, *p3, *p4);
+			delete p1;
+			delete p2;
+			delete p3;
+			delete p4;
 
 			// +x face
 			p1 = new Point3(0.5, v1, u1);
@@ -89,26 +110,96 @@ Cube::Cube(int n) : Shape() {
 			p4 = new Point3(0.5, v2, u1);
 			addTriangle(*p3, *p2, *p1);
 			addTriangle(*p4, *p3, *p1);
+			delete p1;
+			delete p2;
+			delete p3;
+			delete p4;
 		}
 	}
-	free(p1);
-	free(p2);
-	free(p3);
-	free(p4);
 }
 
 Cone::Cone(int n, int m) : Shape() {
-  if (n < 3)
-    n = 3;
+	if (n < 3)
+		n = 3;
+
+	if (m < 1)
+		m = 1;
   
-  // Your code for tessellating a cone goes here  
+	// Your code for tessellating a cone goes here  
+	double theta = (2 * PI) / n;
+
+	Point3 *pTopOrgn, *pBotOrgn, *p1Top, *p2Top, *p1Bot, *p2Bot;
+
+	// origins
+	pTopOrgn = new Point3(0, 0.5, 0);
+	pBotOrgn = new Point3(0, -0.5, 0);
+
+	for(int i = 0; i < n; ++i) {
+		p1Bot = new Point3(cos(theta * i) * 0.5, -0.5, sin(theta * i) * 0.5);
+		p2Bot = new Point3(cos(theta * ((i + 1) % n)) * 0.5, -0.5, sin(theta * ((i + 1) % n)) * 0.5);
+
+		// bottom
+		addTriangle(*pBotOrgn, *p1Bot, *p2Bot);
+	
+		// free allocated memory
+		delete p1Bot;
+		delete p2Bot;
+	}
+
+	// free allocated memory
+	delete pTopOrgn;
+	delete pBotOrgn;
 }
 
 Cylinder::Cylinder(int n, int m) : Shape() {
-  if (n < 3)
-    n = 3;
+	if (n < 3)
+		n = 3;
+
+	if (m < 1)
+		m = 1;
   
-  // Your code for tessellating a cylinder goes here
+	// Your code for tessellating a cylinder goes here
+	double theta = (2 * PI) / n;
+
+	Point3 *pTopOrgn, *pBotOrgn, *p1Top, *p2Top, *p1Bot, *p2Bot;
+
+	// origins
+	pTopOrgn = new Point3(0, 0.5, 0);
+	pBotOrgn = new Point3(0, -0.5, 0);
+
+	for(int i = 0; i < n; ++i) {
+		p1Top = new Point3(cos(theta * i) * 0.5, 0.5, sin(theta * i) * 0.5);
+		p2Top = new Point3(cos(theta * ((i + 1) % n)) * 0.5, 0.5, sin(theta * ((i + 1) % n)) * 0.5);
+
+		p1Bot = new Point3(p1Top -> x, -0.5, p1Top -> z);
+		p2Bot = new Point3(p2Top -> x, -0.5, p2Top -> z);
+
+		// top
+		addTriangle(*p2Top, *p1Top, *pTopOrgn);
+		// bottom
+		addTriangle(*pBotOrgn, *p1Bot, *p2Bot);
+		
+		// sides, start at bottom, increment upwards
+		double deltaY = 1.0 / m;
+		for(int j = 0; j < m; ++j) {
+			p1Top -> y = (j + 1) * deltaY - 0.5;
+			p2Top -> y = p1Top -> y;
+			addTriangle(*p2Bot, *p1Bot, *p2Top);
+			addTriangle(*p2Top, *p1Bot, *p1Top);
+			p1Bot -> y += deltaY;
+			p2Bot -> y = p1Bot -> y;
+		}
+
+		// free allocated memory
+		delete p1Top;
+		delete p2Top;
+		delete p1Bot;
+		delete p2Bot;
+	}
+
+	// free allocated memory
+	delete pTopOrgn;
+	delete pBotOrgn;
 }
 
 

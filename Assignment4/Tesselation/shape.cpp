@@ -228,7 +228,7 @@ Cylinder::Cylinder(int n, int m) : Shape() {
 
 
 const double a = 2 / (1 + sqrt(5.0));
-const double radius = 1.0;
+const double radius = sqrt(a * a + 1);
 
 Sphere::Sphere(int n) : Shape() {
 
@@ -247,7 +247,6 @@ Sphere::Sphere(int n) : Shape() {
 
 	// First create an icosahedron as a starting shape, credit via notes
 
-	// TODO: make constant
 	Point3 *v0 = new Point3(0,  a, -1);
 	Point3 *v1 = new Point3(-a,  1,  0);
 	Point3 *v2 = new Point3(a,  1,  0);
@@ -297,7 +296,7 @@ Sphere::Sphere(int n) : Shape() {
 			p1 = points -> at(j);
 			p2 = points -> at(j + 1);
 			p3 = points -> at(j + 2);
-			
+
 			// calculate midpoint vectors
 			Vector3 *m12Vec = new Vector3((p1.x + p2.x) / 2, (p1.y + p2.y) / 2, (p1.z + p2.z) / 2);
 			Vector3 *m23Vec = new Vector3((p2.x + p3.x) / 2, (p2.y + p3.y) / 2, (p2.z + p3.z) / 2);
@@ -307,7 +306,8 @@ Sphere::Sphere(int n) : Shape() {
 			m12Vec -> normalize();
 			m23Vec -> normalize();
 			m13Vec -> normalize();
-
+			
+			// adjust radii
 			(*m12Vec) *= radius;
 			(*m23Vec) *= radius;
 			(*m13Vec) *= radius;
@@ -339,8 +339,6 @@ Sphere::Sphere(int n) : Shape() {
 		}
 		delete points;
 	}
-
-	//vertices.assign( points -> begin(), points -> end() );
 }
 
 
